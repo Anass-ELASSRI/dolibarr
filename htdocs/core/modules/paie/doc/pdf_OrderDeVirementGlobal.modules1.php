@@ -268,7 +268,7 @@ class pdf_OrderDeVirementGlobal extends ModelePDFUser
 				$objectrefsupplier = dol_sanitizeFileName($object->ref_supplier);
 				$dir = DOL_DATA_ROOT . '/grh/OrdreVirement/';
 
-				$file = $dir . "/i-gouvernancia_" . $dateg . "_OrderDeVirement.pdf";
+				$file = $dir . "/mafitis_" . $dateg . "_OrderDeVirement.pdf";
 				if (!empty($conf->global->SUPPLIER_REF_IN_NAME)) $file = $dir . "/" . $objectref . ($objectrefsupplier ? "_" . $objectrefsupplier : "") . ".pdf";
 			}
 

@@ -50,6 +50,11 @@ function product_prepare_head($object)
 	$head[$h][2] = 'card';
 	$h++;
 
+	$head[$h][0] = DOL_URL_ROOT."/product/codeBarres.php?id=".$object->id;
+	$head[$h][1] = "code-barres";
+	$head[$h][2] = 'codeBarres';
+	$h++;
+	
 	if (!empty($object->status)) {
 		$head[$h][0] = DOL_URL_ROOT."/product/price.php?id=".$object->id;
 		$head[$h][1] = $langs->trans("SellingPrices");

@@ -231,10 +231,10 @@ class pdf_BulletinDePaie extends ModelePDFUser
 			} else {
 				$objectref = dol_sanitizeFileName($object->ref);
 				$objectrefsupplier = dol_sanitizeFileName($object->ref_supplier);
-				$dir = DOL_DATA_ROOT . '/grh/BulletinDePaie';
 
 				//get date
 				$dateg = $_SESSION['dateg'];
+				$dir = DOL_DATA_ROOT . '/grh/BulletinDePaie/' . $dateg;
 
 				$file = $dir . "/" . $object->login . "_" . $dateg . "_BulletinDePaie.pdf";
 				if (!empty($conf->global->SUPPLIER_REF_IN_NAME)) $file = $dir . "/" . $objectref . ($objectrefsupplier ? "_" . $objectrefsupplier : "") . ".pdf";
@@ -388,7 +388,7 @@ class pdf_BulletinDePaie extends ModelePDFUser
             					 <tr class="importent-cell row-bordered"><td>&nbsp;</td><td colspan="2"></td><td class="white-cell"></td><td></td><td class="white-cell" colspan="2"></td></tr>
             					 <tr class="importent-cell row-bordered"><td>&nbsp;</td><td colspan="2">N° CNSS</td><td class="white-cell">' . $salaireParams["cnss"] . '</td><td>Fonction</td><td class="white-cell" colspan="2">' . $role . '</td></tr>
             					 <tr class="importent-cell row-bordered"><td>&nbsp;</td><td colspan="2"></td><td class="white-cell"></td><td></td><td class="white-cell" colspan="2"></td></tr>
-            					 <tr class="importent-cell row-bordered"><td>&nbsp;</td><td colspan="2">Mutuelle</td><td class="white-cell">' . $salaireParams["mutuelle"] . '</td><td>N° CIMR</td><td class="white-cell" colspan="2">' . $salaireParams["cimr"] . '</td></tr>
+            					 <tr class="importent-cell row-bordered"><td>&nbsp;</td><td colspan="2">Matricule</td><td class="white-cell">' . $extrafields["matricule"] . '</td><td>N° CIMR</td><td class="white-cell" colspan="2">' . $salaireParams["cimr"] . '</td></tr>
             					 <tr class="importent-cell row-bordered"><td>&nbsp;</td><td colspan="2"></td><td class="white-cell"></td><td></td><td class="white-cell" colspan="2"></td></tr>
             					 <tr class="importent-cell row-bordered"><td>&nbsp;</td><td colspan="2">Mode Paiement</td><td class="white-cell">' . $salaireParams["mode_paiement"] . '</td><td></td><td class="white-cell" colspan="2"></td></tr>
             					 <tr class="importent-cell row-bordered"><td>&nbsp;</td><td colspan="2"></td><td class="white-cell"></td><td></td><td class="white-cell" colspan="2"></td></tr>
@@ -521,15 +521,17 @@ class pdf_BulletinDePaie extends ModelePDFUser
 				$this->result = array('fullpath' => $file);
 
 				//Cloturé le moi
-				$sql = "UPDATE llx_Paie_MonthDeclaration SET cloture=1 WHERE userid=$object->id AND year=$year AND month=$month;";
-				$res = $db->query($sql);
-				if ($res);
-				else print("<br>fail ERR: " . $sql);
+				if (isset($_SESSION['cloture']) && $_SESSION['cloture'] === 1) {
+					$sql = "UPDATE llx_Paie_MonthDeclaration SET cloture=1 WHERE userid=$object->id AND year=$year AND month=$month;";
+					$res = $db->query($sql);
+					if ($res);
+					else print("<br>fail ERR: " . $sql);
 
-				$sql2 = "update llx_Paie_UserParameters set amount = '0' where userid=$object->id and  rub in (select rub from llx_Paie_Rub where reset = 1)";
-				$res = $db->query($sql2);
-				if ($res);
-				else print("<br>fail ERR: " . $sql2);
+					$sql2 = "update llx_Paie_UserParameters set amount = '0' where userid=$object->id and  rub in (select rub from llx_Paie_Rub where reset = 1)";
+					$res = $db->query($sql2);
+					if ($res);
+					else print("<br>fail ERR: " . $sql2);
+				}
 
 				return 1; // No error
 			} else {
@@ -541,7 +543,7 @@ class pdf_BulletinDePaie extends ModelePDFUser
 			return 0;
 		}
 	}
-	
+
 	//Les compte comptable
 	function getRebrique($name)
 	{

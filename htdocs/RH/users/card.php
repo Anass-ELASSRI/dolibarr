@@ -472,6 +472,7 @@ if (empty($reshook)) {
 
 				if (!$error) {
 					$ret = $object->update($user);
+					
 					if ($ret < 0) {
 						$error++;
 						if ($db->errno() == 'DB_ERROR_RECORD_ALREADY_EXISTS') {

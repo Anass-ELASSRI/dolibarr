@@ -7,9 +7,9 @@ require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
 
 
 
-if (!$user->rights->salaries->read) {
-	accessforbidden("you don't have right for this page");
-}
+// if (!$user->rights->salaries->read) {
+// 	accessforbidden("you don't have right for this page");
+// }
 
 
 

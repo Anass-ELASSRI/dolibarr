@@ -49,9 +49,9 @@ global $mysoc;
 global $forceall, $senderissupplier, $inputalsopricewithtax, $outputalsopricetotalwithtax;
 
 $usemargins = 0;
-if (!empty($conf->margin->enabled) && !empty($object->element) && in_array($object->element, array('facture', 'facturerec', 'propal', 'commande'))) {
-	$usemargins = 1;
-}
+// if (!empty($conf->margin->enabled) && !empty($object->element) && in_array($object->element, array('facture', 'facturerec', 'propal', 'commande'))) {
+// 	$usemargins = 1;
+// }
 
 if (empty($dateSelector)) {
 	$dateSelector = 0;
@@ -333,6 +333,10 @@ if (isset($this->situation_cycle_ref) && $this->situation_cycle_ref) {
 	print '<td align="right" class="linecolcycleref2 nowrap">'.price($sign * $tmp[0]).'</td>';
 }
 
+	// $coldisplay++;
+	// print '<td align="right" class="linecolcycleref2 nowrap">Col</td>';
+
+
 if ($usemargins && !empty($conf->margin->enabled) && empty($user->socid)) {
 	if (!empty($user->rights->margins->creer)) { ?>
 		<td class="linecolmargin1 nowrap margininfos right"><?php $coldisplay++; ?><?php print price($line->pa_ht); ?></td>
@@ -344,6 +348,7 @@ if ($usemargins && !empty($conf->margin->enabled) && empty($user->socid)) {
 		<td class="linecolmargin2 nowrap margininfos right"><?php $coldisplay++; ?><?php print price(price2num($line->marque_tx, 'MT')).'%'; ?></td>
 	<?php }
 }
+
 // Price total without tax
 if ($line->special_code == 3) { ?>
 	<td class="linecoloption nowrap right"><?php $coldisplay++; ?><?php print $langs->trans('Option'); ?></td>

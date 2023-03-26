@@ -229,6 +229,7 @@ class pdf_OrderDeVirementGlobal extends ModelePDFUser
 			$totalNet = 0;
 			$objects = array();
 			$name = '';
+			$es=[];
 			foreach ($moreparams as $id) {
 				$object = new User($this->db);
 				$object->fetch($id);
@@ -250,7 +251,7 @@ class pdf_OrderDeVirementGlobal extends ModelePDFUser
 				if ($res) {
 					$row = $res->fetch_assoc();
 					$object->salaryNet = $row["salaireNet"];
-					$totalNet += $object->salaryNet;
+					$totalNet += $row["salaireNet"];
 				}
 
 				$name .= $object->login . "_";

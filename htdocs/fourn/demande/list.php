@@ -265,7 +265,7 @@ $sql .= " u.firstname, u.lastname, u.login, u.email as user_email, u.statut as u
 $parameters = array();
 $reshook = $hookmanager->executeHooks('printFieldListSelect', $parameters, $object); // Note that $action and $object may have been modified by hook
 $sql .= $hookmanager->resPrint;
-$sql .= MAIN_DB_PREFIX."demande_Achat as da";
+$sql .= MAIN_DB_PREFIX."demande_achat as da";
 
 $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."user as u ON da.fk_user_author = u.rowid";
 $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON da.fk_soc = s.rowid";

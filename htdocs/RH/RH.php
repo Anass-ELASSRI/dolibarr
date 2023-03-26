@@ -26,10 +26,19 @@
 
 // Load Dolibarr environment
 require '../main.inc.php';
+require_once '../vendor/autoload.php';
+
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/categories/class/categorie.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
+
+
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx; 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+
 
 if (!$user->rights->salaries->read) {
 	accessforbidden();
@@ -199,7 +208,7 @@ $prev_month = $prev['month'];
 $prev_day   = 1;
 
 //Save date to use in generate module
-$_SESSION['dateg'] = $prev_month . "-" . $prev_year;
+$_SESSION['dateg'] = $month . "-" . $year;
 
 $next = dol_get_next_month($month, $year);
 $next_year  = $next['year'];
@@ -213,6 +222,74 @@ $ids = array();
 for ($i = 0; $i < $lenght; $i++) {
 	$ids[$i] = GETPOST('id' . ($i + 1), '09');
 }
+
+if ($action == "generateOrderDeVerement") {
+	$header = ['Date', 'Nom Ste', 'Nom Clt', 'RIB Ste', 'RIB Clt', 'MT', 'Détail SIMT'];
+	$nameSte = dolibarr_get_const($db, 'MAIN_INFO_SOCIETE_NOM', $conf->entity);
+	$account = new Account($db);
+	$account->fetch(1);
+	$date = sprintf("%02d", $day) . $month . $year;
+	$dateg = $month . '-' . $year;
+	$smit = '';
+	$spreadsheet = new Spreadsheet();
+	$sheet = $spreadsheet->getActiveSheet();
+	for ($i = 0, $l = count($header); $i < $l; $i++) {
+		$sheet->setCellValueByColumnAndRow($i + 1, 1, $header[$i]);
+	}
+
+	$j = 2;
+	for ($i = 0, $l = count($ids); $i < $l; $i++) {
+		$row = array();
+
+		$ribClt = '';
+		$sql = "SELECT number FROM `llx_user_rib` WHERE fk_user = $ids[$i]";
+		$res = $db->query($sql);
+		if (((object)$res)->num_rows > 0) {
+			$ribClt = ((object)$res)->fetch_assoc()['number'];
+		}
+		// Montant de salaire
+		$mt = 0;
+		$sql1 = "SELECT salaireNet FROM llx_Paie_MonthDeclaration WHERE userid=$ids[$i] AND year=$year AND month=$month ";
+		$res1 = $db->query($sql1);
+		if ($res1->num_rows > 0) {
+			$mt = ((object)$res1)->fetch_assoc()['salaireNet'];
+		}
+		// nom Complete
+		$nameClt = '';
+		$sql1 = "SELECT firstname, lastname FROM llx_user WHERE rowid=$ids[$i]";
+		$res = $db->query($sql1);
+		if ($res->num_rows > 0) {
+			$row = ((object)$res)->fetch_assoc();
+			$nameClt = $row['lastname'] . ' ' . $row['firstname'];
+		}
+
+		$row = [$date, $nameSte, strtoupper($nameClt), $account->number, $ribClt, sprintf("%09d", $mt), $smit];
+		for ($index = 0, $k = count($row); $index < $k; $index++) {
+			$sheet->setCellValueByColumnAndRow($index + 1, $j, $row[$index]);
+		}
+
+		$j++;
+	}
+
+	foreach ($sheet->getColumnIterator() as $column) {
+		$sheet->getColumnDimension($column->getColumnIndex())->setAutoSize(true);
+	}
+	$sheet->getStyle('A1:G1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF00');
+
+	$writer = new Xlsx($spreadsheet);
+	$now = date("Y_m_d_H-i-s");
+	$userId = $user->id;
+	$template = DOL_DATA_ROOT . "/grh/virementAvance/" . $userId . "_OrderDeVirementAvance-" . $now . ".xlsx";
+	$writer->save("$template");
+
+	$fileName = "_OrderDeVirementAvance_$dateg.xlsx";
+	header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+	header('Content-Disposition: attachment; filename="' . urlencode($fileName) . '"');
+	$writer->save('php://output');
+	exit();
+	header("refresh: 0");
+}
+
 $upload_dir = DOL_DATA_ROOT . '/grh/OrdreVirement';
 $permissiontoadd = 1;
 $donotredirect = 1;
@@ -534,21 +611,22 @@ while ($i < min($num, $limit)) {
 	$userstatic->employee = $obj->employee;
 	$userstatic->photo = $obj->photo;
 
-	$sql1 = "SELECT s.fk_user FROM llx_payment_salary as s WHERE s.fk_user=" . $obj->rowid . " AND year(datep)=" . $prev_year . " AND month(datep)=" . $prev_month;
+	$sql1 = "SELECT s.fk_user FROM llx_payment_salary as s WHERE s.fk_user=" . $obj->rowid . " AND year(datep)=" . $month . " AND month(datep)=" . $month;
 	$res1 = $db->query($sql1);
-	if ($res1->num_rows > 0 || (strtotime($obj->dateemploymentend) < strtotime(date("d") . '-' . $prev_month . '-' . $prev_year) && $obj->dateemploymentend != '') || $obj->dateemployment == '' || (strtotime($obj->dateemployment) > strtotime(date("d") . '-' . $prev_month . '-' . $prev_year) && $obj->dateemployment != '')) {
+	if ($res1->num_rows > 0 || (strtotime($obj->dateemploymentend) < strtotime(date("d") . '-' . $month . '-' . $year) && $obj->dateemploymentend != '') || $obj->dateemployment == '' || (strtotime($obj->dateemployment) > strtotime(date("t", strtotime('01-' . $month . '-' . $year)) . '-' . $month . '-' . $year) && $obj->dateemployment != '') || $obj->statut == 0) {
 		$i++;
 		continue;
 	}
 
 	// see if it's cotured
-	$sql1 = "SELECT cloture FROM llx_Paie_MonthDeclaration WHERE userid=$obj->rowid AND year=$prev_year AND month=$prev_month";
+	$sql1 = "SELECT cloture FROM llx_Paie_MonthDeclaration WHERE userid=$obj->rowid AND year=$month AND month=$month";
 	$res1 = $db->query($sql1);
 	$cloture = 0;
 	if ($res1) {
 		$row = $res1->fetch_assoc();
 		$cloture = $row["cloture"] ? $row["cloture"] : 0;
 	}
+
 	// see if it's cotured
 	$mode = '';
 	$sql1 = "SELECT mode_paiement FROM llx_Paie_UserInfo WHERE userid=$obj->rowid";
@@ -557,8 +635,8 @@ while ($i < min($num, $limit)) {
 		$row = $res1->fetch_assoc();
 		$mode = $row["mode_paiement"];
 	}
-	if ($cloture != 1)
-		continue;
+	// if ($cloture != 1)
+	// 	continue;
 	if ($mode != 'virement')
 		continue;
 
@@ -708,7 +786,7 @@ while ($i < min($num, $limit)) {
 
 
 	// get salary net
-	$sql = "SELECT salaireNet FROM llx_Paie_MonthDeclaration WHERE userid=$obj->rowid AND year=$year AND month=$prev_month";
+	$sql = "SELECT salaireNet FROM llx_Paie_MonthDeclaration WHERE userid=$obj->rowid AND year=$year AND month=$month";
 	$res = $db->query($sql);
 	if ($res) {
 		$row = $res->fetch_assoc();
@@ -755,7 +833,7 @@ $delallowed = 1;
 $modelpdf = (!empty($object->modelpdf) ? $object->modelpdf : (empty($conf->global->RH_ADDON_PDF) ? '' : $conf->global->RH_ADDON_PDF));
 
 if (!$showAll) {
-	$_SESSION["filterDoc"] = $prev_month . "-" . $prev_year;
+	$_SESSION["filterDoc"] = $month . "-" . $year;
 }
 
 print $formfile->showdocuments('OrdreVirement', $subdir, $filedir, $urlsource, $genallowed, $delallowed, $modelpdf, 1, 0, 0, 40, 0, 'remonth=' . $month . '&amp;reyear=' . $year, '', '', $societe->default_lang);
@@ -806,31 +884,31 @@ print '</form>';
 
 print '<iframe name="dummyframe" id="dummyframe" style="display: none;"></iframe>';
 
-$dateLastDay = date("Y-m-t", strtotime($prev_month . '/01/' . $prev_year));
+$dateLastDay = date("Y-m-t", strtotime($month . '/01/' . $year));
 
 print '<form id="frmSalary" name="salary" action="/salaries/card.php" method="post" target="dummyframe">';
 print '<input type="hidden" name="token" value="' . newToken() . '">';
 print '<input type="hidden" name="action" value="add">';
 print '<input type="hidden" id="datep" name="datep" value="' . date("t", strtotime($dateLastDay)) . '">';
 print '<input type="hidden" name="datepday" value="' . date("t", strtotime($dateLastDay)) . '">';
-print '<input type="hidden" name="datepmonth" value="' . $prev_month . '">';
-print '<input type="hidden" name="datepyear" value="' . $prev_year . '">';
+print '<input type="hidden" name="datepmonth" value="' . $month . '">';
+print '<input type="hidden" name="datepyear" value="' . $year . '">';
 
 
 print '<input type="hidden" id="datev" name="datev" value="' . $dateLastDay . '">';
 print '<input type="hidden" name="datevday" value="' . date("t", strtotime($dateLastDay)) . '">';
-print '<input type="hidden" name="datevmonth" value="' . $prev_month . '">';
-print '<input type="hidden" name="datevyear" value="' . $prev_year . '">';
+print '<input type="hidden" name="datevmonth" value="' . $month . '">';
+print '<input type="hidden" name="datevyear" value="' . $year . '">';
 
-print '<input type="hidden" name="datesp" value="' . $prev_year . '-' . $prev_month . '-01">';
+print '<input type="hidden" name="datesp" value="' . $year . '-' . $month . '-01">';
 print '<input type="hidden" name="datespday" value="01">';
-print '<input type="hidden" name="datespmonth" value="' . $prev_month . '">';
-print '<input type="hidden" name="datespyear" value="' . $prev_year . '">';
+print '<input type="hidden" name="datespmonth" value="' . $month . '">';
+print '<input type="hidden" name="datespyear" value="' . $year . '">';
 
 print '<input type="hidden" name="dateep" value="' . $dateLastDay . '">';
 print '<input type="hidden" name="dateepday" value="' . date("t", strtotime($dateLastDay)) . '">';
-print '<input type="hidden" name="dateepmonth" value="' . $prev_month . '">';
-print '<input type="hidden" name="dateepyear" value="' . $prev_year . '">';
+print '<input type="hidden" name="dateepmonth" value="' . $month . '">';
+print '<input type="hidden" name="dateepyear" value="' . $year . '">';
 
 print '<input type="hidden" id="amount" name="amount" value="0">';
 print '<input type="hidden" id="label" name="label" value="">';

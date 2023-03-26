@@ -1381,35 +1381,35 @@ if (is_object($objcanvas) && $objcanvas->displayCanvasExists($action)) {
 			}
 		}
 
-		$showbarcode = empty($conf->barcode->enabled) ? 0 : 1;
-		if (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && empty($user->rights->barcode->lire_advance)) {
-			$showbarcode = 0;
-		}
+		// $showbarcode = empty($conf->barcode->enabled) ? 0 : 1;
+		// if (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && empty($user->rights->barcode->lire_advance)) {
+		// 	$showbarcode = 0;
+		// }
 
-		if ($showbarcode) {
-			print '<tr><td>'.$langs->trans('BarcodeType').'</td><td>';
-			if (GETPOSTISSET('fk_barcode_type')) {
-				$fk_barcode_type = GETPOST('fk_barcode_type')?GETPOST('fk_barcode_type'):0;
-			} else {
-				if (empty($fk_barcode_type) && !empty($conf->global->PRODUIT_DEFAULT_BARCODE_TYPE)) {
-					$fk_barcode_type = getDolGlobalInt("PRODUIT_DEFAULT_BARCODE_TYPE");
-				} else {
-					$fk_barcode_type=0;
-				}
-			}
-			require_once DOL_DOCUMENT_ROOT.'/core/class/html.formbarcode.class.php';
-			$formbarcode = new FormBarCode($db);
-			print $formbarcode->selectBarcodeType($fk_barcode_type, 'fk_barcode_type', 1);
-			print '</td>';
-			print '</tr><tr>';
-			print '<td>'.$langs->trans("BarcodeValue").'</td><td>';
-			$tmpcode = GETPOSTISSET('barcode') ? GETPOST('barcode') : $object->barcode;
-			if (empty($tmpcode) && !empty($modBarCodeProduct->code_auto)) {
-				$tmpcode = $modBarCodeProduct->getNextValue($object, $fk_barcode_type);
-			}
-			print '<input class="maxwidth100" type="text" name="barcode" value="'.dol_escape_htmltag($tmpcode).'">';
-			print '</td></tr>';
-		}
+		// if ($showbarcode) {
+		// 	print '<tr><td>'.$langs->trans('BarcodeType').'</td><td>';
+		// 	if (GETPOSTISSET('fk_barcode_type')) {
+		// 		$fk_barcode_type = GETPOST('fk_barcode_type')?GETPOST('fk_barcode_type'):0;
+		// 	} else {
+		// 		if (empty($fk_barcode_type) && !empty($conf->global->PRODUIT_DEFAULT_BARCODE_TYPE)) {
+		// 			$fk_barcode_type = getDolGlobalInt("PRODUIT_DEFAULT_BARCODE_TYPE");
+		// 		} else {
+		// 			$fk_barcode_type=0;
+		// 		}
+		// 	}
+		// 	require_once DOL_DOCUMENT_ROOT.'/core/class/html.formbarcode.class.php';
+		// 	$formbarcode = new FormBarCode($db);
+		// 	print $formbarcode->selectBarcodeType($fk_barcode_type, 'fk_barcode_type', 1);
+		// 	print '</td>';
+		// 	print '</tr><tr>';
+		// 	print '<td>'.$langs->trans("BarcodeValue").'</td><td>';
+		// 	$tmpcode = GETPOSTISSET('barcode') ? GETPOST('barcode') : $object->barcode;
+		// 	if (empty($tmpcode) && !empty($modBarCodeProduct->code_auto)) {
+		// 		$tmpcode = $modBarCodeProduct->getNextValue($object, $fk_barcode_type);
+		// 	}
+		// 	print '<input class="maxwidth100" type="text" name="barcode" value="'.dol_escape_htmltag($tmpcode).'">';
+		// 	print '</td></tr>';
+		// }
 
 		// Description (used in invoice, propal...)
 		print '<tr><td class="tdtop">'.$langs->trans("Description").'</td><td>';
@@ -1931,34 +1931,34 @@ if (is_object($objcanvas) && $objcanvas->displayCanvasExists($action)) {
 				}
 			}
 
-			// Barcode
-			$showbarcode = empty($conf->barcode->enabled) ? 0 : 1;
-			if (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && empty($user->rights->barcode->lire_advance)) {
-				$showbarcode = 0;
-			}
+			// // Barcode
+			// $showbarcode = empty($conf->barcode->enabled) ? 0 : 1;
+			// if (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && empty($user->rights->barcode->lire_advance)) {
+			// 	$showbarcode = 0;
+			// }
 
-			if ($showbarcode) {
-				print '<tr><td>'.$langs->trans('BarcodeType').'</td><td>';
-				if (GETPOSTISSET('fk_barcode_type')) {
-					$fk_barcode_type = GETPOST('fk_barcode_type');
-				} else {
-					$fk_barcode_type = $object->barcode_type;
-					if (empty($fk_barcode_type) && !empty($conf->global->PRODUIT_DEFAULT_BARCODE_TYPE)) {
-						$fk_barcode_type = $conf->global->PRODUIT_DEFAULT_BARCODE_TYPE;
-					}
-				}
-				require_once DOL_DOCUMENT_ROOT.'/core/class/html.formbarcode.class.php';
-				$formbarcode = new FormBarCode($db);
-				print $formbarcode->selectBarcodeType($fk_barcode_type, 'fk_barcode_type', 1);
-				print '</td></tr>';
-				print '<tr><td>'.$langs->trans("BarcodeValue").'</td><td>';
-				$tmpcode = GETPOSTISSET('barcode') ? GETPOST('barcode') : $object->barcode;
-				if (empty($tmpcode) && !empty($modBarCodeProduct->code_auto)) {
-					$tmpcode = $modBarCodeProduct->getNextValue($object, $fk_barcode_type);
-				}
-				print '<input class="maxwidth150 maxwidthonsmartphone" type="text" name="barcode" value="'.dol_escape_htmltag($tmpcode).'">';
-				print '</td></tr>';
-			}
+			// if ($showbarcode) {
+			// 	print '<tr><td>'.$langs->trans('BarcodeType').'</td><td>';
+			// 	if (GETPOSTISSET('fk_barcode_type')) {
+			// 		$fk_barcode_type = GETPOST('fk_barcode_type');
+			// 	} else {
+			// 		$fk_barcode_type = $object->barcode_type;
+			// 		if (empty($fk_barcode_type) && !empty($conf->global->PRODUIT_DEFAULT_BARCODE_TYPE)) {
+			// 			$fk_barcode_type = $conf->global->PRODUIT_DEFAULT_BARCODE_TYPE;
+			// 		}
+			// 	}
+			// 	require_once DOL_DOCUMENT_ROOT.'/core/class/html.formbarcode.class.php';
+			// 	$formbarcode = new FormBarCode($db);
+			// 	print $formbarcode->selectBarcodeType($fk_barcode_type, 'fk_barcode_type', 1);
+			// 	print '</td></tr>';
+			// 	print '<tr><td>'.$langs->trans("BarcodeValue").'</td><td>';
+			// 	$tmpcode = GETPOSTISSET('barcode') ? GETPOST('barcode') : $object->barcode;
+			// 	if (empty($tmpcode) && !empty($modBarCodeProduct->code_auto)) {
+			// 		$tmpcode = $modBarCodeProduct->getNextValue($object, $fk_barcode_type);
+			// 	}
+			// 	print '<input class="maxwidth150 maxwidthonsmartphone" type="text" name="barcode" value="'.dol_escape_htmltag($tmpcode).'">';
+			// 	print '</td></tr>';
+			// }
 
 			// Description (used in invoice, propal...)
 			print '<tr><td class="tdtop">'.$langs->trans("Description").'</td><td>';
@@ -2284,61 +2284,61 @@ if (is_object($objcanvas) && $objcanvas->displayCanvasExists($action)) {
 				print '</td></tr>';
 			}
 
-			if ($showbarcode) {
-				// Barcode type
-				print '<tr><td class="nowrap">';
-				print '<table width="100%" class="nobordernopadding"><tr><td class="nowrap">';
-				print $langs->trans("BarcodeType");
-				print '</td>';
-				if (($action != 'editbarcodetype') && $usercancreate && $createbarcode) {
-					print '<td class="right"><a class="editfielda" href="'.$_SERVER["PHP_SELF"].'?action=editbarcodetype&id='.$object->id.'&token='.newToken().'">'.img_edit($langs->trans('Edit'), 1).'</a></td>';
-				}
-				print '</tr></table>';
-				print '</td><td>';
-				if ($action == 'editbarcodetype' || $action == 'editbarcode') {
-					require_once DOL_DOCUMENT_ROOT.'/core/class/html.formbarcode.class.php';
-					$formbarcode = new FormBarCode($db);
-				}
+			// if ($showbarcode) {
+			// 	// Barcode type
+			// 	print '<tr><td class="nowrap">';
+			// 	print '<table width="100%" class="nobordernopadding"><tr><td class="nowrap">';
+			// 	print $langs->trans("BarcodeType");
+			// 	print '</td>';
+			// 	if (($action != 'editbarcodetype') && $usercancreate && $createbarcode) {
+			// 		print '<td class="right"><a class="editfielda" href="'.$_SERVER["PHP_SELF"].'?action=editbarcodetype&id='.$object->id.'&token='.newToken().'">'.img_edit($langs->trans('Edit'), 1).'</a></td>';
+			// 	}
+			// 	print '</tr></table>';
+			// 	print '</td><td>';
+			// 	if ($action == 'editbarcodetype' || $action == 'editbarcode') {
+			// 		require_once DOL_DOCUMENT_ROOT.'/core/class/html.formbarcode.class.php';
+			// 		$formbarcode = new FormBarCode($db);
+			// 	}
 
-				$fk_barcode_type = '';
-				if ($action == 'editbarcodetype') {
-					print $formbarcode->formBarcodeType($_SERVER['PHP_SELF'].'?id='.$object->id, $object->barcode_type, 'fk_barcode_type');
-					$fk_barcode_type = $object->barcode_type;
-				} else {
-					$object->fetch_barcode();
-					$fk_barcode_type = $object->barcode_type;
-					print $object->barcode_type_label ? $object->barcode_type_label : ($object->barcode ? '<div class="warning">'.$langs->trans("SetDefaultBarcodeType").'<div>' : '');
-				}
-				print '</td></tr>'."\n";
+			// 	$fk_barcode_type = '';
+			// 	if ($action == 'editbarcodetype') {
+			// 		print $formbarcode->formBarcodeType($_SERVER['PHP_SELF'].'?id='.$object->id, $object->barcode_type, 'fk_barcode_type');
+			// 		$fk_barcode_type = $object->barcode_type;
+			// 	} else {
+			// 		$object->fetch_barcode();
+			// 		$fk_barcode_type = $object->barcode_type;
+			// 		print $object->barcode_type_label ? $object->barcode_type_label : ($object->barcode ? '<div class="warning">'.$langs->trans("SetDefaultBarcodeType").'<div>' : '');
+			// 	}
+			// 	print '</td></tr>'."\n";
 
-				// Barcode value
-				print '<tr><td class="nowrap">';
-				print '<table width="100%" class="nobordernopadding"><tr><td class="nowrap">';
-				print $langs->trans("BarcodeValue");
-				print '</td>';
-				if (($action != 'editbarcode') && $usercancreate && $createbarcode) {
-					print '<td class="right"><a class="editfielda" href="'.$_SERVER["PHP_SELF"].'?action=editbarcode&id='.$object->id.'&token='.newToken().'">'.img_edit($langs->trans('Edit'), 1).'</a></td>';
-				}
-				print '</tr></table>';
-				print '</td><td>';
-				if ($action == 'editbarcode') {
-					$tmpcode = GETPOSTISSET('barcode') ? GETPOST('barcode') : $object->barcode;
-					if (empty($tmpcode) && !empty($modBarCodeProduct->code_auto)) {
-						$tmpcode = $modBarCodeProduct->getNextValue($object, $fk_barcode_type);
-					}
+			// 	// Barcode value
+			// 	print '<tr><td class="nowrap">';
+			// 	print '<table width="100%" class="nobordernopadding"><tr><td class="nowrap">';
+			// 	print $langs->trans("BarcodeValue");
+			// 	print '</td>';
+			// 	if (($action != 'editbarcode') && $usercancreate && $createbarcode) {
+			// 		print '<td class="right"><a class="editfielda" href="'.$_SERVER["PHP_SELF"].'?action=editbarcode&id='.$object->id.'&token='.newToken().'">'.img_edit($langs->trans('Edit'), 1).'</a></td>';
+			// 	}
+			// 	print '</tr></table>';
+			// 	print '</td><td>';
+			// 	if ($action == 'editbarcode') {
+			// 		$tmpcode = GETPOSTISSET('barcode') ? GETPOST('barcode') : $object->barcode;
+			// 		if (empty($tmpcode) && !empty($modBarCodeProduct->code_auto)) {
+			// 			$tmpcode = $modBarCodeProduct->getNextValue($object, $fk_barcode_type);
+			// 		}
 
-					print '<form method="post" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'">';
-					print '<input type="hidden" name="token" value="'.newToken().'">';
-					print '<input type="hidden" name="action" value="setbarcode">';
-					print '<input type="hidden" name="barcode_type_code" value="'.$object->barcode_type_code.'">';
-					print '<input size="40" class="maxwidthonsmartphone" type="text" name="barcode" value="'.$tmpcode.'">';
-					print '&nbsp;<input type="submit" class="button smallpaddingimp" value="'.$langs->trans("Modify").'">';
-					print '</form>';
-				} else {
-					print showValueWithClipboardCPButton($object->barcode);
-				}
-				print '</td></tr>'."\n";
-			}
+			// 		print '<form method="post" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'">';
+			// 		print '<input type="hidden" name="token" value="'.newToken().'">';
+			// 		print '<input type="hidden" name="action" value="setbarcode">';
+			// 		print '<input type="hidden" name="barcode_type_code" value="'.$object->barcode_type_code.'">';
+			// 		print '<input size="40" class="maxwidthonsmartphone" type="text" name="barcode" value="'.$tmpcode.'">';
+			// 		print '&nbsp;<input type="submit" class="button smallpaddingimp" value="'.$langs->trans("Modify").'">';
+			// 		print '</form>';
+			// 	} else {
+			// 		print showValueWithClipboardCPButton($object->barcode);
+			// 	}
+			// 	print '</td></tr>'."\n";
+			// }
 
 			// Batch number management (to batch)
 			if (!empty($conf->productbatch->enabled)) {

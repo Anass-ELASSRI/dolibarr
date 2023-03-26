@@ -226,7 +226,7 @@ class pdf_EtatMensuelCNSS extends ModelePDFUser
 				$objectrefsupplier = dol_sanitizeFileName($object->ref_supplier);
 				$dir = DOL_DATA_ROOT . '/grh/Etats/CNSS';
 
-				$file = $dir . "/i-gouvernancia_" . $name . "_EtatMensuelCNSS.pdf";
+				$file = $dir . "/mafitis_" . $name . "_EtatMensuelCNSS.pdf";
 				if (!empty($conf->global->SUPPLIER_REF_IN_NAME)) $file = $dir . "/" . $objectref . ($objectrefsupplier ? "_" . $objectrefsupplier : "") . ".pdf";
 			}
 

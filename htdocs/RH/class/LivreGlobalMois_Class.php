@@ -33,14 +33,15 @@ $workingdaysdeclaréTot = 0;
 $netImposableTot = 0;
 $chargeFamilleTot = 0;
 $irNetTot  = 0;
+$irbase = 0;
 $prev_arrondiTot = 0;
 $arrondiTot  = 0;
 $totalNetTot = 0;
 $brutImposableTot = 0;
 
-$debitTot=0;
-$creditTot=0;
-$baseTot=0;
+$debitTot = 0;
+$creditTot = 0;
+$baseTot = 0;
 
 $sql = "SELECT * FROM llx_Paie_Rub";
 $res = $db->query($sql);
@@ -52,6 +53,7 @@ while ($i < $num) {
     $Taux = 0;
     $workingdaysdeclaré = 0;
     $congeDays = 0;
+    $bases["salaire mensuel"] = 0;
 
     $obj = $db->fetch_object($result);
     //$sql2="SELECT ex.name FROM " . MAIN_DB_PREFIX . "extrafields as ex LEFT JOIN " . MAIN_DB_PREFIX . "user_extrafields as eu on ex.rowid=eu.fk"
@@ -71,25 +73,13 @@ while ($i < $num) {
 
     $object->fetch($obj->rowid);
 
-    // $sql1 = "SELECT fk_user FROM " . MAIN_DB_PREFIX . "payment_salary WHERE fk_user=" . $obj->rowid . " AND year(datep)=" . $prev_year . " AND month(datep)=" . $prev_month;
-    // $res1 = $db->query($sql1);
-    // if ($res1->num_rows == 0) {
-    //     $i++;
-    //     continue;
-    // }
 
-    // see if it's clotured
-    // $cloture = 0;
-    // $sql1 = "SELECT cloture FROM " . MAIN_DB_PREFIX . "Paie_MonthDeclaration WHERE userid=$obj->rowid AND year=$prev_year AND month=$prev_month";
-    // $res1 = $db->query($sql1);
-    // if ($res1) {
-    //     $row1 = $res1->fetch_assoc();
-    //     $cloture = $row1["cloture"] > 0 ? $row1["cloture"] : 0;
-    // }
-    // if ($cloture == 0) {
-    //     $i++;
-    //     continue;
-    // }
+    $sql1 = "SELECT s.fk_user FROM llx_payment_salary as s WHERE s.fk_user=" . $obj->rowid . " AND year(datep)=" . $year . " AND month(datep)=" . $month;
+    $res1 = $db->query($sql1);
+    if ((strtotime($obj->dateemploymentend) < strtotime('23' . '-' . $prev_month . '-' . $prev_year) && $obj->dateemploymentend != '') || $obj->dateemployment == '' || (strtotime($obj->dateemployment) > strtotime('22-' . $month . '-' . $year) && $obj->dateemployment != '') || $obj->statut == 0) {
+        $i++;
+        continue;
+    }
 
     /*************************************** ******************************************
      * ********************************** 
@@ -107,7 +97,7 @@ while ($i < $num) {
     if ($res->num_rows > 0)
         $extrafields = ((object)($res))->fetch_assoc();
 
-    $sql = "SELECT * FROM " . MAIN_DB_PREFIX . "Paie_MonthDeclaration m, " . MAIN_DB_PREFIX . "Paie_MonthDeclarationRubs r WHERE r.userid=m.userid AND r.month=m.month AND r.year = m.year AND m.userid=$object->id AND m.month=$prev_month AND m.year = $prev_year";
+    $sql = "SELECT * FROM " . MAIN_DB_PREFIX . "Paie_MonthDeclaration m, " . MAIN_DB_PREFIX . "Paie_MonthDeclarationRubs r WHERE r.userid=m.userid AND r.month=m.month AND r.year = m.year AND m.userid=$object->id AND m.month=$month AND m.year = $year";
     $res = $db->query($sql);
     if (((object)$res)->num_rows > 0) {
         $row = $res->fetch_assoc();
@@ -117,9 +107,12 @@ while ($i < $num) {
         $netImposable = (float)$row["netImposable"];
         $netImposableTot += $netImposable;
         $brutImposable = (float)$row["salaireBrut"];
-        $brutImposableTot+=$brutImposable;
+        $brutImposableTot += $brutImposable;
         $irNet = (float)$row["ir"];
-        $irNetTot += $irNet;
+        if ($irNet > 0) {
+            $irNetTot += $irNet;
+            $irbase += $netImposable;
+        }
         $totalNet = (float)$row["salaireNet"];
         $totalNetTot += $totalNet;
 
@@ -137,6 +130,7 @@ while ($i < $num) {
         $rubs = $row["rubs"];
 
         foreach (explode(";", $rubs) as $r) {
+            $base = 0;
             //print $rub."<br>";
             $rub = explode(":", $r);
             $sql = "SELECT * FROM " . MAIN_DB_PREFIX . "Paie_Rub WHERE rub=" . $rub[0];
@@ -170,10 +164,21 @@ while ($i < $num) {
 
                 if ($rub[1] == "enBrut") {
                     $apayer = $rub[2];
+                    if ($rub[0] === '1') {
+                        $base = $row["salaireMensuel"];
+                        $rubBases[$rub[0]] = !isset($rubBases[$rub[0]]) ? $base : $rubBases[$rub[0]] + $base;
+                        $baseTot += $bases["salaire mensuel"];
+                    }
+                    if ($rub[0] === '25') {
+                        $base = $rub[3];
+                        $rubBases[$rub[0]] = !isset($rubBases[$rub[0]]) ? $base : $rubBases[$rub[0]] + $base;
+                        $baseTot += $base;
+                    }
+
                     $enBrutsRubs[$rub[0]] = array("rub" => $rub[0], "designation" => $param["designation"]);
                     $enBruts[$rub[0]] += $apayer;
-                    $debitTot+=$apayer;
-                } else if ($rub[1] == "cotisation") {
+                    $debitTot += $apayer;
+                } else if ($rub[1] == "cotisation" && $Rubs[$rub[0]]["surBulletin"]) {
                     $base = $bases[$Rubs[$rub[0]]['base']];
                     if ($Rubs[$rub[0]]['plafonne']) {
                         $basePlafond = ($Rubs[$rub[0]]['plafond'] * 100) / $Rubs[$rub[0]]['percentage'];
@@ -182,15 +187,15 @@ while ($i < $num) {
                     }
                     $rubBases[$rub[0]] = !isset($rubBases[$rub[0]]) ? $base : $rubBases[$rub[0]] + $base;
                     $aretenu = $rub[2];
-                    $cotisationsRubs[$rub[0]] = array("rub" => $rub[0], "designation" => $param["designation"]);
+                    $creditTot += abs($aretenu);
                     $cotisations[$rub[0]] += $aretenu;
-                    $creditTot+=$aretenu;
-                    $baseTot+=$base;
+                    $cotisationsRubs[$rub[0]] = array("rub" => $rub[0], "designation" => $param["designation"]);
+                    $baseTot += $base;
                 } else if ($rub[1] == "pasEnBrut") {
                     $apayer = $rub[2];
                     $pasEnBrutRubs[$rub[0]] = array("rub" => $rub[0], "designation" => $param["designation"]);
                     $pasEnBruts[$rub[0]] += $apayer;
-                    $debitTot+=$apayer;
+                    $debitTot += $apayer;
                 }
             }
         }
@@ -198,6 +203,10 @@ while ($i < $num) {
 
     $i++;
 }
+$creditTot += $totalNetTot;
+$creditTot += $irNetTot;
+$baseTot += $irbase;
+$baseEnciente = 4;
 
 asort($enBrutsRubs);
 asort($pasEnBrutRubs);

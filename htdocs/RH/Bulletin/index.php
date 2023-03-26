@@ -310,6 +310,8 @@ print '
 // Actions to build doc
 $action = GETPOST('action', 'aZ09');
 
+$_SESSION['cloture']=1;
+
 $upload_dir = DOL_DATA_ROOT . '/grh/BulletinDePaie';
 $permissiontoadd = 1;
 $donotredirect = 1;
@@ -834,7 +836,7 @@ while ($i < ($limit ? min($num, $limit) : $num)) {
 
 	$sql1 = "SELECT s.fk_user FROM llx_payment_salary as s WHERE s.fk_user=" . $obj->rowid . " AND year(datep)=" . $year . " AND month(datep)=" . $month;
 	$res1 = $db->query($sql1);
-	if ((strtotime($obj->dateemploymentend) < strtotime(date("d") . '-' . $month . '-' . $year) && $obj->dateemploymentend != '') || $obj->dateemployment == '' || (strtotime($obj->dateemployment) > strtotime(date("t", strtotime('01-' . $month . '-' . $year)) . '-' . $month . '-' . $year) && $obj->dateemployment != '')) {
+	if ((strtotime($obj->dateemploymentend) < strtotime('23' . '-' . $prev_month . '-' . $prev_year) && $obj->dateemploymentend != '') || $obj->dateemployment == '' || (strtotime($obj->dateemployment) > strtotime('22-' . $month . '-' . $year) && $obj->dateemployment != '') || $obj->statut == 0) {
 		$i++;
 		continue;
 	}
@@ -1159,36 +1161,36 @@ print '</table>
 GenerateDocuments();
 
 
-if ($action == 'confirmeWorkingDays') {
-	$action = '';
+// if ($action == 'confirmeWorkingDays') {
+// 	$action = '';
 
-	foreach ($users as $user) {
-		$workingdays = (float)GETPOST("workingdays_$user->rowid", "float");
-		$workingHours = (int)GETPOST("workingHours_$user->rowid", "float");
-		// $joursFerie = (int)GETPOST("joursferie_$user->rowid", "float");
-		//change the working days
-		$sql = "REPLACE INTO llx_Paie_MonthDeclaration(userid, year, month, workingDays, workingHours) VALUES($user->rowid, $year, $month, $workingdays, $workingHours);";
-		$res = $db->query($sql);
-		if ($res);
-		else print("<br>fail ERR: " . $sql);
+// 	foreach ($users as $user) {
+// 		$workingdays = (float)GETPOST("workingdays_$user->rowid", "float");
+// 		$workingHours = (int)GETPOST("workingHours_$user->rowid", "float");
+// 		// $joursFerie = (int)GETPOST("joursferie_$user->rowid", "float");
+// 		//change the working days
+// 		$sql = "REPLACE INTO llx_Paie_MonthDeclaration(userid, year, month, workingDays, workingHours) VALUES($user->rowid, $year, $month, $workingdays, $workingHours);";
+// 		$res = $db->query($sql);
+// 		if ($res);
+// 		else print("<br>fail ERR: " . $sql);
 
-		$sql = "SELECT rub FROM llx_Paie_HourSupp";
-		$res = $db->query($sql);
-		if ($res->num_rows > 0) {
-			while ($row = $res->fetch_assoc()) {
-				$nhours = (int)GETPOST("hoursupp_" . $row["rub"] . "_$user->rowid", "int");
+// 		$sql = "SELECT rub FROM llx_Paie_HourSupp";
+// 		$res = $db->query($sql);
+// 		if ($res->num_rows > 0) {
+// 			while ($row = $res->fetch_assoc()) {
+// 				$nhours = (int)GETPOST("hoursupp_" . $row["rub"] . "_$user->rowid", "int");
 
-				$sqlh = "REPLACE INTO llx_Paie_HourSuppDeclaration(userid, rub, year, month, nhours) VALUES($user->rowid, " . $row["rub"] . ", $year, $month, $nhours);";
-				$resh = $db->query($sqlh);
-				if ($resh);
-				else {
-					print("<br>fail ERR: " . $sqlh);
-					exit;
-				}
-			}
-		}
-	}
-}
+// 				$sqlh = "REPLACE INTO llx_Paie_HourSuppDeclaration(userid, rub, year, month, nhours) VALUES($user->rowid, " . $row["rub"] . ", $year, $month, $nhours);";
+// 				$resh = $db->query($sqlh);
+// 				if ($resh);
+// 				else {
+// 					print("<br>fail ERR: " . $sqlh);
+// 					exit;
+// 				}
+// 			}
+// 		}
+// 	}
+// }
 
 
 $action = GETPOST('action');
@@ -1197,6 +1199,40 @@ if ($id && $action == 'show') {
 	ShowBulletin($id);
 }
 ShowDocuments();
+progressBar();
+
+function progressBar()
+{
+	echo '
+	<style>
+	.loader {
+		border: 16px solid #f3f3f3;
+		border-radius: 50%;
+		border-top: 16px solid blue;
+		border-bottom: 16px solid blue;
+		width: 120px;
+		height: 120px;
+		-webkit-animation: spin 2s linear infinite;
+		animation: spin 2s linear infinite;
+		position: fixed;
+		top: 45%;
+        left: 45%;
+		display:none;
+	}
+
+	@-webkit-keyframes spin {
+		0% { -webkit-transform: rotate(0deg); }
+		100% { -webkit-transform: rotate(360deg); }
+	}
+
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
+	}
+	</style>
+
+	<div class="loader" id="loader"></div>';
+}
 
 function GenerateDocuments()
 {
@@ -1213,8 +1249,14 @@ function GenerateDocuments()
 
 	print "<script>
         $('#btngen').click(function(){
-            var i=1;
-            $('#tblUsers  input:checkbox.checkforselect:checked').each(function () {
+			var elem = document.getElementById('bar');
+			var i=0;
+			var els=$('#tblUsers  input:checkbox.checkforselect:checked');
+			var num=els.length;
+			if(num>0){
+				$('#loader').css('display', 'block');
+			}
+            els.each(function () {
                 var id = $(this).closest('tr').find('input[name=idCell]').val();
                 var salary = $(this).closest('tr').find('input[name=salaryCell]').val();
                 var b = $(this).closest('tr').find('input[name=bankCell]').val();
@@ -1228,25 +1270,17 @@ function GenerateDocuments()
 					success:function(){			
 					}
 				});
-            });
-			location.reload(true);
-	        
+
+            });   
         });
+		$(document).ajaxStop(function(){
+			window.location.reload();
+		});
     </script>";
 
 	print '</form>';
-	// print '<hr>';
-	// print '<form action="' . $_SERVER["PHP_SELF"] . '" method="post">';
-	// print '<input type="hidden" name="token" value="' . newToken() . '">';
-	// print '<input type="hidden" name="action" value="changeWorkingDays">';
-	// print '<input type="hidden" name="day" value="' . $day . '">';
-	// print '<input type="hidden" name="month" value="' . $month . '">';
-	// print '<input type="hidden" name="year" value="' . $year . '">';
-	// print '<input type="hidden" name="limit" value="' . $limit . '">';
-	// print '<div class="right"  style="margin-bottom: 100px; margin-right: 5%;"><input type="submit" class="butActionDelete" value="Changer les jours travaillé">';
-	// print '</form>';
-
 }
+
 function ShowDocuments()
 {
 	global $db, $object, $conf, $month, $year, $societe;
@@ -1254,8 +1288,8 @@ function ShowDocuments()
 	$formfile = new FormFile($db);
 
 
-	$subdir = '';
-	$filedir = DOL_DATA_ROOT . '/grh/BulletinDePaie';
+	$subdir = "$month-$year";
+	$filedir = DOL_DATA_ROOT . '/grh/BulletinDePaie/'.$subdir;
 	$urlsource = $_SERVER['PHP_SELF'] . '';
 	$genallowed = 0;
 	$delallowed = 1;
@@ -1320,7 +1354,7 @@ function ShowBulletin($id)
                 <tbody>
                 <tr class="importent-cell row-bordered"><td>&nbsp;</td><td>&nbsp;</td><td>Nom</td><td class="white-cell">' . $object->lastname . ' ' . $object->firstname . '</td><td>Date de naissance</td><td class="white-cell" colspan="2">' . date("d/m/Y", $object->birth) . '</td></tr>
                 <tr class="importent-cell row-bordered"><td>&nbsp;</td><td>&nbsp;</td><td>N° CNSS</td><td class="white-cell">' . $salaireParams["cnss"] . '</td><td>Fonction</td><td class="white-cell" colspan="2">' . $object->job . '</td></tr>
-                <tr class="importent-cell row-bordered"><td>&nbsp;</td><td>&nbsp;</td><td>N° Mutuelle</td><td class="white-cell">' . $salaireParams["mutuelle"] . '</td><td>N° CIMR</td><td class="white-cell" colspan="2">' . $salaireParams["cimr"] . '</td></tr>
+                <tr class="importent-cell row-bordered"><td>&nbsp;</td><td>&nbsp;</td><td>Matricule</td><td class="white-cell">' . $extrafields["matricule"] . '</td><td>N° CIMR</td><td class="white-cell" colspan="2">' . $salaireParams["cimr"] . '</td></tr>
                 <tr class="importent-cell row-bordered"><td>&nbsp;</td><td>&nbsp;</td><td>Periode</td><td class="white-cell">' . $periode . '</td><td>adresse</td><td class="white-cell" colspan="2">' . $object->address . '</td></tr>
                 <tr class="importent-cell row-bordered"><td>&nbsp;</td><td>&nbsp;</td><td>Situation familiale</td><td class="white-cell">' . $situation . '</td><td>nombre d\'enfants</td><td class="white-cell" colspan="2">' . $enfants . '</td></tr>
                 <tr class="importent-cell row-bordered"><td rowspan="2">Rub</td><td rowspan="2">Désignation</td><td rowspan="2">Nombre</td><td rowspan="2">Base</td><td colspan="3">Part salariale</td></tr>

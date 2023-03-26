@@ -206,7 +206,7 @@ class pdf_LivreGlobalMois extends ModelePDFUser
 	public function write_file($object, $outputlangs = '', $srctemplatepath = '', $hidedetails = 0, $hidedesc = 0, $hideref = 0, $moreparams)
 	{
 		// phpcs:enable
-		global $object, $user, $langs, $conf, $mysoc, $hookmanager, $nblines, $action, $prev_month, $prev_year, $periode, $year, $db, $sql0;
+		global $object, $user, $langs, $conf, $mysoc, $hookmanager, $nblines, $action, $prev_month, $prev_year, $month, $periode, $year, $db, $sql0;
 		error_log("work?");
 
 		if (!is_object($outputlangs)) $outputlangs = $langs;
@@ -220,8 +220,7 @@ class pdf_LivreGlobalMois extends ModelePDFUser
 
 			include DOL_DOCUMENT_ROOT . "/RH/class/LivreGlobalMois_Class.php";
 
-			$name = sprintf("%02d", $prev_month) . "-$prev_year";
-
+			$name = sprintf("%02d", $month) . "-$year";
 
 			// Definition of $dir and $file
 			if ($object->specimen) {
@@ -232,7 +231,7 @@ class pdf_LivreGlobalMois extends ModelePDFUser
 				$objectrefsupplier = dol_sanitizeFileName($object->ref_supplier);
 				$dir = DOL_DATA_ROOT . '/grh/LivreGlobalMois/';
 
-				$file = $dir . "/i-gouvernancia_" . $name . "_LivreDePaieGlobalParMois.pdf";
+				$file = $dir . "/mafitis_" . $name . "_LivreDePaieGlobalParMois.pdf";
 				if (!empty($conf->global->SUPPLIER_REF_IN_NAME)) $file = $dir . "/" . $objectref . ($objectrefsupplier ? "_" . $objectrefsupplier : "") . ".pdf";
 			}
 
@@ -379,20 +378,19 @@ class pdf_LivreGlobalMois extends ModelePDFUser
 
 				//Get les rubriques en brut global
 				foreach ($enBrutsRubs as $rub) {
-					$Livre .= '<tr class="row-content"><td>' . $rub["rub"] . '</td><td >' . $rub["designation"] . '</td><td></td><td >' . price($enBruts[$rub["rub"]], 0, '', 1, 1, 2) . '</td><td></td></tr>';
+					$Livre .= '<tr class="row-content"><td>' . $rub["rub"] . '</td><td >' . $rub["designation"] . '</td><td>' . price($rubBases[$rub["rub"]], 0, '', 1, 1, 2) . '</td><td >' . price($enBruts[$rub["rub"]], 0, '', 1, 1, 2) . '</td><td></td></tr>';
 				}
-
 				$Livre .= '<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>
-							<tr class="row-content"><td>&nbsp;</td><td >TOTAL BRUT</td><td></td><td > ' . price($brutGlobalTot, 0, '', 1, 1, 2) . ' </td><td></td></tr>
-							<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>';
-
+				<tr class="row-content"><td>&nbsp;</td><td >TOTAL BRUT</td><td></td><td > ' . price($brutGlobalTot, 0, '', 1, 1, 2) . ' </td><td></td></tr>
+				<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>';
+				
 				// //Get les rubriques cotisations
 				// foreach ($cotisationsRubs as $rub) {
 				// 	$Livre .= '<tr class=""><td class="right-td">' . $rub["rub"] . '</td><td >' . $rub["designation"] . '</td><td class="right-td">' . price($cotisations[$rub["rub"]]) . '</td></tr>';
 				// }
 				//Get les rubriques cotisations
 				foreach ($cotisationsRubs as $rub) {
-					$Livre .= '<tr class=""><td class="right-td">' . $rub["rub"] . '</td><td >' . $rub["designation"] . '</td><td class="right-td">' . $rubBases[$rub["rub"]] . '</td><td></td><td class="right-td">' . price(abs($cotisations[$rub["rub"]]), 0, '', 1, 1, 2) . '</td></tr>';
+					$Livre .= '<tr class=""><td class="right-td">' . $rub["rub"] . '</td><td >' . $rub["designation"] . '</td><td class="right-td">' . price($rubBases[$rub["rub"]], 0, '', 1, 1, 2) . '</td><td></td><td class="right-td">' . price(abs($cotisations[$rub["rub"]]), 0, '', 1, 1, 2) . '</td></tr>';
 				}
 
 
@@ -403,7 +401,7 @@ class pdf_LivreGlobalMois extends ModelePDFUser
 				$Livre .= '<tr class=""><td>' . getRebrique("chargefamille") . '</td><td >DECUCTION</td><td></td><td >' . price($chargeFamilleTot, 0, '', 1, 1, 2) . '</td><td></td></tr>';
 
 				$Livre .= '<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>
-						<tr class=""><td>' . getRebrique("ir") . '</td><td >RETENU IGR </td><td>' . price($brutImposableTot, 0, '', 1, 1, 2) . '</td><td></td><td> ' . price($irNetTot, 0, '', 1, 1, 2) . ' </td></tr>';
+						<tr class=""><td>' . getRebrique("ir") . '</td><td >RETENU IGR </td><td>' . price($irbase, 0, '', 1, 1, 2) . '</td><td></td><td> ' . price($irNetTot, 0, '', 1, 1, 2) . ' </td></tr>';
 
 				$Livre .= '<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>';
 
@@ -427,7 +425,7 @@ class pdf_LivreGlobalMois extends ModelePDFUser
 
 				$Livre .= '<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>
 					 <tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>
-					 <tr  class="row-content" ><td>&nbsp;</td><td>Net a payer</td><td></td><td class="right-td" > ' . price($totalNetTot, 0, '', 1, 1, 2) . ' </td><td></td></tr>';
+					 <tr  class="row-content" ><td>&nbsp;</td><td>Net a payer</td><td></td><td class="right-td" >  </td><td>' . price($totalNetTot, 0, '', 1, 1, 2) . '</td></tr>';
 
 				$Livre .= '<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>
 								<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>

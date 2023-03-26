@@ -114,7 +114,7 @@ $prev_month = $prev['month'];
 $prev_day   = 1;
 
 //Save date to use in generate module
-$_SESSION['dateg'] = $prev_month . "-" . $prev_year;
+$_SESSION['dateg'] = $month . "-" . $year;
 
 $next = dol_get_next_month($month, $year);
 $next_year  = $next['year'];
@@ -198,7 +198,7 @@ llxHeader("", "Livre de Paie Global");
 $text = "Livre de Paie Global";
 
 //peroide
-$periode = sprintf("%02d", $prev_month) . '/' . $prev_year;
+$periode = sprintf("%02d", $month) . '/' . $year;
 
 //add filter by date
 datefilter();
@@ -226,23 +226,23 @@ include DOL_DOCUMENT_ROOT . '/core/actions_builddoc.inc.php';
 
 $french_months = array('janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre');
 
-print "<div><h3>Le mois: " . $french_months[$prev_month - 1] . " </h3></div>";
+print "<div><h3>Le mois: " . $french_months[$month - 1] . " </h3></div>";
 
 
 GenerateDocuments();
-
 include "../class/LivreGlobalMois_Class.php";
+
 
 function GenerateDocuments()
 {
-    global $day, $month, $prev_year, $start;
+    global $day, $month, $year, $start;
     print '<form id="frmgen" name="generateDocs" method="post">';
     print '<input type="hidden" name="token" value="' . newToken() . '">';
     print '<input type="hidden" name="action" value="generateOrderDeVerement">';
     print '<input type="hidden" name="model" value="LivreGlobalMois">';
     print '<input type="hidden" name="day" value="' . $day . '">';
     print '<input type="hidden" name="remonth" value="' . $month . '">';
-    print '<input type="hidden" name="reyear" value="' . $prev_year . '">';
+    print '<input type="hidden" name="reyear" value="' . $year . '">';
     print '<input type="hidden" name="start" value="' . $start . '">';
     print '<div class="right"  style="margin-bottom: 100px; margin-right: 20%;"><input type="submit" id="btngen" class="button" value="génerer"/></div>';
 
@@ -251,11 +251,11 @@ function GenerateDocuments()
 
 function ShowDocuments()
 {
-    global $db, $object, $conf, $month, $prev_year, $societe, $showAll, $prev_month, $prev_year, $start;
+    global $db, $object, $conf, $prev_month, $year, $societe, $showAll, $month, $prev_year, $start;
     print '<div class="fichecenter"><div class="fichehalfleft">';
     $formfile = new FormFile($db);
 
-    $name = sprintf("%02d", $prev_month) . "-$prev_year";
+    $name = sprintf("%02d", $month) . "-$year";
 
     $subdir = '';
     $filedir = DOL_DATA_ROOT . '/grh/LivreGlobalMois' . '/' . $subdir;
@@ -269,7 +269,7 @@ function ShowDocuments()
         $_SESSION["filterDoc"] = $name;
     }
 
-    print $formfile->showdocuments('LivreGlobalMois', $subdir, $filedir, $urlsource, $genallowed, $delallowed, $modelpdf, 1, 0, 0, 40, 0, 'remonth=' . $month . '&amp;reyear=' . $prev_year, '', '', $societe->default_lang);
+    print $formfile->showdocuments('LivreGlobalMois', $subdir, $filedir, $urlsource, $genallowed, $delallowed, $modelpdf, 1, 0, 0, 40, 0, 'remonth=' . $month . '&amp;reyear=' . $year, '', '', $societe->default_lang);
     $somethingshown = $formfile->numoffiles;
 
     $_SESSION["filterDoc"] = null;
@@ -335,7 +335,7 @@ $Livre = '<style type="text/css">
 
 //Get les rubriques en brut global
 foreach ($enBrutsRubs as $rub) {
-    $Livre .= '<tr class="row-content"><td>' . $rub["rub"] . '</td><td >' . $rub["designation"] . '</td><td></td><td >' . price($enBruts[$rub["rub"]], 0, '', 1, 1, 2) . '</td><td></td></tr>';
+    $Livre .= '<tr class="row-content"><td>' . $rub["rub"] . '</td><td >' . $rub["designation"] . '</td><td>' . price($rubBases[$rub["rub"]], 0, '', 1, 1, 2) . '</td><td >' . price($enBruts[$rub["rub"]], 0, '', 1, 1, 2) . '</td><td></td></tr>';
 }
 
 $Livre .= '<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>
@@ -344,7 +344,7 @@ $Livre .= '<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td>
 
 //Get les rubriques cotisations
 foreach ($cotisationsRubs as $rub) {
-    $Livre .= '<tr class=""><td>' . $rub["rub"] . '</td><td >' . $rub["designation"] . '</td><td>' . $rubBases[$rub["rub"]] . '</td><td></td><td >' . price(abs($cotisations[$rub["rub"]]), 0, '', 1, 1, 2) . '</td></tr>';
+    $Livre .= '<tr class=""><td>' . $rub["rub"] . '</td><td >' . $rub["designation"] . '</td><td>' . price($rubBases[$rub["rub"]], 0, '', 1, 1, 2) . '</td><td></td><td >' . price(abs($cotisations[$rub["rub"]]), 0, '', 1, 1, 2) . '</td></tr>';
 }
 
 $Livre .= '<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>
@@ -354,7 +354,7 @@ $Livre .= '<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td>
 $Livre .= '<tr class=""><td>' . getRebrique("chargefamille") . '</td><td >DECUCTION</td><td></td><td >' . price($chargeFamilleTot, 0, '', 1, 1, 2) . '</td><td></td></tr>';
 
 $Livre .= '
-        <tr class=""><td>' . getRebrique("ir") . '</td><td >RETENU IGR </td><td>' . price($brutImposableTot, 0, '', 1, 1, 2) . '</td><td></td><td> ' . price($irNetTot, 0, '', 1, 1, 2) . ' </td></tr>';
+        <tr class=""><td>' . getRebrique("ir") . '</td><td >RETENU IGR </td><td>' . price($irbase, 0, '', 1, 1, 2) . '</td><td></td><td> ' . price($irNetTot, 0, '', 1, 1, 2) . ' </td></tr>';
 
 $Livre .= '<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>';
 
@@ -374,7 +374,7 @@ foreach ($pasEnBrutRubs as $rub) {
 
 $Livre .= '<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>
              <tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>
-             <tr  class="row-content" ><td>&nbsp;</td><td >Net a payer</td><td></td><td > ' . price($totalNetTot, 0, '', 1, 1, 2) . ' </td><td></td></tr>';
+             <tr  class="row-content" ><td>&nbsp;</td><td >Net a payer</td><td></td><td >  </td><td>' . price($totalNetTot, 0, '', 1, 1, 2) . '</td></tr>';
 
 $Livre .= '<tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>
              <tr><td>&nbsp;</td><td >&nbsp;</td><td >&nbsp;</td><td></td><td></td></tr>
@@ -419,7 +419,7 @@ function datefilter()
 
 print "<script>
 		$(document).ready(function(){
-			$('#re').val('" . $month . "/" . $prev_year . "');	
+			$('#re').val('" . $month . "/" . $year . "');	
 		});
 </script>";
 

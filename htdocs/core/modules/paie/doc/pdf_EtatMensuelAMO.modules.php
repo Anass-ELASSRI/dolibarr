@@ -227,7 +227,7 @@ class pdf_EtatMensuelAMO extends ModelePDFUser
 				$objectrefsupplier = dol_sanitizeFileName($object->ref_supplier);
 				$dir = DOL_DATA_ROOT . '/grh/Etats/AMO';
 
-				$file = $dir . "/i-gouvernancia_" . $name . "_EtatMensuelAMO.pdf";
+				$file = $dir . "/mafitis_" . $name . "_EtatMensuelAMO.pdf";
 				if (!empty($conf->global->SUPPLIER_REF_IN_NAME)) $file = $dir . "/" . $objectref . ($objectrefsupplier ? "_" . $objectrefsupplier : "") . ".pdf";
 			}
 

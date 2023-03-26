@@ -49,6 +49,20 @@ function commande_prepare_head(Commande $object)
 		$h++;
 	}
 
+	if ($object->statut == 0) {
+		$head[$h][0] = DOL_URL_ROOT.'/commande/valorisationCommande.php?id='.$object->id;
+		$head[$h][1] = "valorisation de commande";
+		$head[$h][2] = 'valorisationCommande';
+		$h++;
+	}
+	
+	if ($object->statut == 2) {
+		$head[$h][0] = DOL_URL_ROOT.'/commande/dispatch.php?id='.$object->id;
+		$head[$h][1] = "Dsipatch";
+		$head[$h][2] = 'dispatch';
+		$h++;
+	}
+
 	if (empty($conf->global->MAIN_DISABLE_CONTACTS_TAB)) {
 		$nbContact = count($object->liste_contact(-1, 'internal')) + count($object->liste_contact(-1, 'external'));
 		$head[$h][0] = DOL_URL_ROOT.'/commande/contact.php?id='.$object->id;

@@ -237,7 +237,7 @@ class pdf_LivreGlobal extends ModelePDFUser
 				$objectrefsupplier = dol_sanitizeFileName($object->ref_supplier);
 				$dir = DOL_DATA_ROOT . '/grh/LivreGlobal/';
 
-				$file = $dir . "/i-gouvernancia_" . $name . "_LivreDePaieGlobal.pdf";
+				$file = $dir . "/mafitis_" . $name . "_LivreDePaieGlobal.pdf";
 				if (!empty($conf->global->SUPPLIER_REF_IN_NAME)) $file = $dir . "/" . $objectref . ($objectrefsupplier ? "_" . $objectrefsupplier : "") . ".pdf";
 			}
 

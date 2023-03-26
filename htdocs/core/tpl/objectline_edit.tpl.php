@@ -42,7 +42,7 @@ if (empty($object) || !is_object($object)) {
 
 $usemargins = 0;
 if (!empty($conf->margin->enabled) && !empty($object->element) && in_array($object->element, array('facture', 'facturerec', 'propal', 'commande'))) {
-	$usemargins = 1;
+	// $usemargins = 1;
 }
 
 global $forceall, $senderissupplier, $inputalsopricewithtax, $canchangeproduct;

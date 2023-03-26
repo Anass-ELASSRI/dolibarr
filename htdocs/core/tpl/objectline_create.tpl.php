@@ -41,9 +41,9 @@ if (empty($object) || !is_object($object)) {
 	exit;
 }
 $usemargins = 0;
-if (!empty($conf->margin->enabled) && !empty($object->element) && in_array($object->element, array('facture', 'facturerec', 'propal', 'commande'))) {
-	$usemargins = 1;
-}
+// if (!empty($conf->margin->enabled) && !empty($object->element) && in_array($object->element, array('facture', 'facturerec', 'propal', 'commande'))) {
+// 	$usemargins = 1;
+// }
 if (!isset($dateSelector)) {
 	global $dateSelector; // Take global var only if not already defined into function calling (for example formAddObjectLine)
 }
@@ -159,6 +159,8 @@ if ($nolinesbefore) {
 				}
 			}
 		}
+		print '<td class="linecolcycleref2 right">Colissage</td>';
+
 		?>
 		<td class="linecoledit" colspan="<?php echo $colspan; ?>">&nbsp;</td>
 	</tr>
@@ -388,9 +390,11 @@ if ($nolinesbefore) {
 		print '<td class="nobottom linecolvat right">';
 		$coldisplay++;
 		if ($seller->tva_assuj == "0") {
-			echo '<input type="hidden" name="tva_tx" id="tva_tx" value="0">'.vatrate(0, true);
 		} else {
-			echo $form->load_tva('tva_tx', (GETPOSTISSET("tva_tx") ? GETPOST("tva_tx", 'alpha', 2) : -1), $seller, $buyer, 0, 0, '', false, 1);
+			echo '<input type="text" name="tva_tx" id="tva_tx" value="0">';
+			// echo "buyer" . $buyer->id;
+			// echo "seller" . $seller->id;
+			// echo $form->load_tva('tva_tx', (GETPOSTISSET("tva_tx") ? GETPOST("tva_tx", 'alpha', 2) : -1), $seller, $buyer, 0, 0, '', false, 1);
 		}
 		?>
 	</td>
@@ -441,30 +445,8 @@ if ($nolinesbefore) {
 		$coldisplay++;
 		print '<td></td>';
 	}
-	if (!empty($usemargins)) {
-		if (!empty($user->rights->margins->creer)) {
-			$coldisplay++;
-			?>
-			<td class="nobottom margininfos linecolmargin right">
-				<!-- For predef product -->
-				<?php if (!empty($conf->product->enabled) || !empty($conf->service->enabled)) { ?>
-					<select id="fournprice_predef" name="fournprice_predef" class="flat minwidth75imp maxwidth150" style="display: none;"></select>
-				<?php } ?>
-				<!-- For free product -->
-				<input type="text" id="buying_price" name="buying_price" class="flat maxwidth75 right" value="<?php echo (GETPOSTISSET("buying_price") ? GETPOST("buying_price", 'alpha', 2) : ''); ?>">
-			</td>
-			<?php
-			if (!empty($conf->global->DISPLAY_MARGIN_RATES)) {
-				echo '<td class="nobottom nowraponall margininfos right"><input class="flat right" type="text" size="2" id="np_marginRate" name="np_marginRate" value="'.(GETPOSTISSET("np_marginRate") ? GETPOST("np_marginRate", 'alpha', 2) : '').'"><span class="np_marginRate hideonsmartphone">%</span></td>';
-				$coldisplay++;
-			}
-			if (!empty($conf->global->DISPLAY_MARK_RATES)) {
-				echo '<td class="nobottom nowraponall margininfos right"><input class="flat right" type="text" size="2" id="np_markRate" name="np_markRate" value="'.(GETPOSTISSET("np_markRate") ? GETPOST("np_markRate", 'alpha', 2) : '').'"><span class="np_markRate hideonsmartphone">%</span></td>';
-				$coldisplay++;
-			}
-		}
-	}
-	$coldisplay += $colspan;
+	$coldisplay++;
+	print '<td></td>';
 	?>
 	<td class="nobottom linecoledit center valignmiddle" colspan="<?php echo $colspan; ?>">
 		<input type="submit" class="button reposition" value="<?php echo $langs->trans('Add'); ?>" name="addline" id="addline">
